@@ -22,7 +22,7 @@ import datetime
 def reward_fn(prev_state, action, state):
     return 0
 
-class AeroEnv(object):
+class AeroEnv(gym.Env):
 
     def __init__(self, timeout=0.100, serial_port_path="/dev/ttyACM1", data_dir="data"):
         self._timeout = timeout
@@ -62,5 +62,7 @@ class AeroEnv(object):
 
         return state, reward, False, {}
 
+    def render(self, mode='human', close=False):
+        pass
 
 
