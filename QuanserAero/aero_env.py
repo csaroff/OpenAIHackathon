@@ -20,9 +20,6 @@ import datetime
 from aero_bridge import MAX_MOTOR_VOLTAGE
 
 
-def reward_fn(prev_state, action, state):
-    return -(state[0]-self._desired_pitch)^2 - (state[1]-self._desired_yaw)^2 - state[2]^2 - state[3]^2
-
 
 class AeroEnv(gym.Env):
     def __init__(self, timeout=0.100, serial_port_path="/dev/ttyACM1", data_dir="data"):
@@ -32,15 +29,19 @@ class AeroEnv(gym.Env):
         self._start_time = time.time()
         self._prev_state = None
 
-        self.action_space = spaces.box(low=np.array([-MAX_MOTOR_VOLTAGE, -MAX_MOTOR_VOLTAGE]), \
-            high=np.array([MAX_MOTOR_VOLTAGE, MAX_MOTOR_VOLTAGE]))
-        self.observation_space = space.box(low=np.array([-100, -3000, -100, -100]), \
-            high=np.array([100, 3000, 100, 100]))
+        # self.action_space = gym.spaces.Box(low=np.array([-MAX_MOTOR_VOLTAGE, -MAX_MOTOR_VOLTAGE]), \
+        #     high=np.array([MAX_MOTOR_VOLTAGE, MAX_MOTOR_VOLTAGE]))
+        # self.observation_space = gym.space.Box(low=np.array([-100, -3000, -100, -100]), \
+        #     high=np.array([100, 3000, 100, 100]))
 
         self._aero = QuanserAero(serial_port_path=serial_port_path)
 
         self._desired_pitch = 0
         self._desired_yaw = 0
+
+    def reward_fn(self, prev_state, action, state):
+        return -(state[0]-self._desired_pitch)**2 - (state[1]-self._desired_yaw)**2 - state[2]**2 - state[3]**2
+
 
     def reset(self):
         state = self._aero.send(0, 0, 0, 255, 0)
@@ -71,7 +72,7 @@ class AeroEnv(gym.Env):
 
         # get state
         state = self._aero.step(action)
-        reward = reward_fn(self._prev_state, action, state)
+        reward = self.reward_fn(self._prev_state, action, state)
 
         done = self.done(state)
 
