@@ -44,26 +44,33 @@ class QuanserAero(object):
         message_waiting = False
         message_index = 0
 
-        while True and not message_waiting:
-            part = self._serial_port.read()
-            if message_in_progress:
-                if message_index < message_length:
-                    message[message_index] = part
-                    message_index += 1
-                elif part == END_BYTE:
-                    message_in_progress = False
-                    message_waiting = True
-                    message_index = 0
-            elif part == START_BYTE:
-                message_in_progress = True
+        try:
+            while True and not message_waiting:
+                part = self._serial_port.read()
+                if message_in_progress:
+                    if message_index < message_length:
+                        message[message_index] = part
+                        message_index += 1
+                    elif part == END_BYTE:
+                        message_in_progress = False
+                        message_waiting = True
+                        message_index = 0
+                elif part == START_BYTE:
+                    message_in_progress = True
 
-        pitch_part = message[0:4]
-        yaw_part = message[4:8]
+            pitch_part = message[0:4]
+            yaw_part = message[4:8]
 
-        pitch = struct.unpack('<f', pitch_part)[0]
-        yaw = struct.unpack('<f', yaw_part)[0]
+            pitch = struct.unpack('<f', pitch_part)[0]
+            yaw = struct.unpack('<f', yaw_part)[0]
+            return pitch, yaw
+       
+        except:
+            print("program crashed")
+            pitch = 0
+            yaw = 0
 
-        return pitch, yaw
+            return pitch, yaw
 
 
     def send(self, motor0_voltage, motor1_voltage, led_red, led_green, led_blue):

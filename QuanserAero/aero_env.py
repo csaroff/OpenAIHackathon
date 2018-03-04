@@ -29,10 +29,10 @@ class AeroEnv(gym.Env):
         self._start_time = time.time()
         self._prev_state = None
 
-        # self.action_space = gym.spaces.Box(low=np.array([-MAX_MOTOR_VOLTAGE, -MAX_MOTOR_VOLTAGE]), \
-        #     high=np.array([MAX_MOTOR_VOLTAGE, MAX_MOTOR_VOLTAGE]))
-        # self.observation_space = gym.space.Box(low=np.array([-100, -3000, -100, -100]), \
-        #     high=np.array([100, 3000, 100, 100]))
+        self.action_space = gym.spaces.Box(low=np.array([-MAX_MOTOR_VOLTAGE, -MAX_MOTOR_VOLTAGE]), \
+            high=np.array([MAX_MOTOR_VOLTAGE, MAX_MOTOR_VOLTAGE]))
+        self.observation_space = gym.spaces.Box(low=np.array([-100, -3000, -100, -100]), \
+            high=np.array([100, 3000, 100, 100]))
 
         self._aero = QuanserAero(serial_port_path=serial_port_path)
 
@@ -44,7 +44,7 @@ class AeroEnv(gym.Env):
 
 
     def reset(self):
-        state = self._aero.send(0, 0, 0, 255, 0)
+        state = self._aero.step([0, 0, 0, 255, 0])
         self._start_time = time.time()
         return state, 0, False, {}
 
@@ -77,6 +77,7 @@ class AeroEnv(gym.Env):
         done = self.done(state)
 
         self._prev_state = state
+
         return state, reward, done, {}
 
 
