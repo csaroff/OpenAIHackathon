@@ -33,6 +33,9 @@ class QuanserAero(object):
         signal.signal(signal.SIGINT, self._signal_handler)
         print('Pressing Ctrl+C sends the zero signals to the motors')
      
+        self._prev_time = time.time()
+        self._prev_state = None
+
     def receive(self):
         message_length = 8
         message = bytearray(message_length)
@@ -126,7 +129,20 @@ class QuanserAero(object):
                 'time: ', send_time.__str__() )
 
         delta_time = time.time() - send_time
-        return pitch, yaw
+
+        # calculate deltas
+        current_time = time.time()
+        if self._prev_state == None: 
+            d_pitch = 0
+            d_yaw = 0
+        else:
+            d_pitch = (pitch - self._prev_state[0]) / (current_time - self._prev_time)
+            d_yaw = (yaw - self._prev_state[1]) / (current_time - self._prev_time)
+
+        self._prev_state = [pitch, yaw, d_pitch, d_yaw]
+        self._prev_time = current_time
+
+        return pitch, yaw, d_pitch, d_yaw
 
 
     def _signal_handler(self, signal, frame):
